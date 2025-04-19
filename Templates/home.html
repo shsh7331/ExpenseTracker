@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home - Super Fun Expense Tracker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">
+        <h1>Super Fun Expense Tracker</h1>
+      </div>
+      <nav>
+        <a href="{{ url_for('home') }}">Home</a> |
+        <a href="{{ url_for('add_expense') }}">Add Expense</a> |
+        <a href="{{ url_for('expense_list') }}">Expense List</a> |
+        <a href="{{ url_for('savings') }}">Savings Goals</a> |
+        <a href="{{ url_for('settings') }}">Settings</a> |
+        {% if logged_in %}
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="home-welcome">
+      <h2>Welcome to your personal finance tracker!</h2>
+      <p>Track your expenses, manage your budget, and set savings goals all in one place.</p>
+    </section>
+  </main>
+
+  <footer class="simple-footer">
+    <div class="container">
+      <p>&copy; {{ current_year if current_year else "2025" }} Super Fun Expense Tracker.</p>
+    </div>
+  </footer>
+</body>
+</html>

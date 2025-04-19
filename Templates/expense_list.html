@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Expense List</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="logo">
+      <h1>Super Fun Expense Tracker</h1>
+    </div>
+    <nav class="nav-links">
+      <a href="{{ url_for('home') }}">Home</a> |
+      <a href="{{ url_for('add_expense') }}">Add Expense</a> |
+      <a href="{{ url_for('expense_list') }}">Expense List</a> |
+      <a href="{{ url_for('savings') }}">Savings Goals</a> |
+      <a href="{{ url_for('settings') }}">Settings</a> |
+      {% if logged_in %}
+      <a href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+      <a href="{{ url_for('login') }}">Login</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <section class="home-welcome">
+    <h2>Your Expenses</h2>
+    <table>
+      <thead>
+      <tr>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Amount</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for exp in expenses %}
+      <tr>
+        <td>{{ exp.expense_date }}</td>
+        <td>{{ exp.expense_name }}</td>
+        <td>{{ exp.category_name }}</td>
+        <td>${{ "%.2f"|format(exp.expense_amount) }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="4">No expenses recorded yet.</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<footer class="simple-footer">
+  <div class="container">
+    <p>&copy; {{ current_year }} Super Fun Expense Tracker.</p>
+  </div>
+</footer>
+</body>
+</html>
