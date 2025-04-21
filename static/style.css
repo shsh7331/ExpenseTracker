@@ -1,196 +1,125 @@
-/* General Reset & Base Styling */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
+/* General body styling */
 body {
-  background-color: #f9fafb;
-  color: #333;
-  line-height: 1.6;
-  font-size: 16px;
+    font-family: sans-serif;
+    margin: 20px;
+    background-color: #f8f9fa; /* Light background */
 }
 
-/* Container Layout */
-.container {
-  width: 90%;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+nav {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
 }
 
-/* Header */
-header {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 1rem 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+nav a {
+    text-decoration: none;
+    margin-right: 10px;
+    color: #007bff;
+}
+nav a:hover {
+    text-decoration: underline;
 }
 
-.logo h1 {
-  color: #4f46e5;
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
+/* Container for the main content */
+.expense-list-container {
+    max-width: 900px; /* Adjust width as needed */
+    margin: 0 auto; /* Center the container */
+    background-color: #fff; /* White background for content area */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Navigation */
-.nav-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 0.5rem;
+.expense-list-container h1, 
+.expense-list-container h2 {
+    color: #333;
+    margin-bottom: 20px;
 }
 
-.nav-links a {
-  text-decoration: none;
-  color: #4b5563;
-  font-weight: 500;
-  transition: color 0.2s ease;
+/* Category Grid */
+.category-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Space between cards */
+    margin-bottom: 30px;
 }
 
-.nav-links a:hover {
-  color: #1f2937;
+/* Category Card */
+.category-card {
+    display: flex;
+    align-items: center;
+    background-color: #fff; /* Card background */
+    border: 1px solid #eee;
+    border-radius: 5px;
+    padding: 15px;
+    /* Each card takes up roughly 1/3rd of the width, adjusting for gap */
+    flex: 1 1 calc(33.333% - 20px);
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-/* Main Sections */
-main {
-  padding: 2rem 0;
+.category-icon {
+    margin-right: 15px;
+    font-size: 1.5em; /* Placeholder size */
+    color: #555;
 }
 
-/* Login Container */
-.login-container, .home-welcome, .form-group {
-  background-color: #ffffff;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  margin-bottom: 2rem;
-}
-
-.login-container h2 {
-  margin-bottom: 1rem;
-  color: #111827;
-}
-
-/* Form Styling */
-.login-form .form-group {
-  margin-bottom: 1.5rem;
-}
-
-.login-form label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #374151;
-  font-weight: 600;
-}
-
-.login-form input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background-color: #f9fafb;
-  transition: border 0.2s ease;
-}
-
-.login-form input:focus {
-  border-color: #6366f1;
-  outline: none;
-}
-
-/* Buttons */
-.login-btn, .btn {
-  background-color: #6366f1;
-  color: white;
-  padding: 0.75rem 1.25rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.3s ease;
-}
-
-.login-btn:hover, .btn:hover {
-  background-color: #4f46e5;
-}
-
-/* Error Message */
-.error-message {
-  background-color: #fee2e2;
-  color: #991b1b;
-  padding: 1rem;
-  border: 1px solid #fca5a5;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-}
-
-/* Footer */
-.simple-footer {
-  background-color: #f3f4f6;
-  text-align: center;
-  padding: 1rem 0;
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin-top: 2rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 600px) {
-  .nav-links {
+.category-details {
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .container {
-    padding: 1rem;
-  }
-
-  .login-container, .home-welcome {
-    padding: 1.25rem;
-  }
 }
 
-/* ===== Expense List Table Styling ===== */
-table {
-  width: calc(100% - 2in);    /* leave a 1in margin each side */
-  max-width: calc(100% - 2in);
-  border-collapse: collapse;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  background: #ffffff;
-  margin: 2rem auto;          /* top/bottom 2rem, auto left/right */
-  border-radius: 8px;
-  overflow: hidden;
+.category-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+    color: #333;
 }
 
-th {
-  background-color: #2c3e50;
-  color: #ecf0f1;
-  font-size: 1.1rem;
-  padding: 0.75rem 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border: 1px solid #ddd;
+.category-budget,
+.category-spending {
+    font-size: 0.9em;
+    color: #666;
+    line-height: 1.4;
 }
 
-td {
-  padding: 0.75rem 1rem;
-  border: 1px solid #ddd;
-  font-size: 0.95rem;
+/* Recent Transactions List */
+.transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between transaction cards */
 }
 
-tbody tr:nth-child(even) {
-  background-color: #f2f2f2;
+/* Transaction Card */
+.transaction-card {
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between; /* Pushes name/category and details apart */
+    align-items: center;
 }
 
-tbody tr:hover {
-  background-color: #e1e5ea;
+/* Added: Container for name and category */
+.transaction-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Small space between name and category */
 }
 
-@media (max-width: 600px) {
-  th, td {
-    font-size: 0.9rem;
-    padding: 0.5rem;
-  }
+.transaction-name {
+    font-weight: 500; /* Slightly bolder than normal */
+    color: #333;
+}
+
+/* Added: Style for category */
+.transaction-category {
+    font-size: 0.85em;
+    color: #888; /* Lighter grey for category */
+}
+
+.transaction-details {
+    font-size: 0.9em;
+    color: #777;
 }
