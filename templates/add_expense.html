@@ -11,18 +11,16 @@
     <div class="logo">
       <h1>Super Fun Expense Tracker</h1>
     </div>
-    <nav class="nav-links">
+    <nav>
       <a href="{{ url_for('home') }}">Home</a> |
       <a href="{{ url_for('add_expense') }}">Add Expense</a> |
       <a href="{{ url_for('expense_list') }}">Expense List</a> |
       <a href="{{ url_for('savings') }}">Savings Goals</a> |
       <a href="{{ url_for('settings') }}">Settings</a> |
-      {% if logged_in %}
-      <a href="{{ url_for('logout') }}">Logout</a>
-      {% else %}
-      <a href="{{ url_for('login') }}">Login</a>
-      {% endif %}
-    </nav>
+      <a href="{{ url_for('create') }}">Create an Account</a> |
+      <a href="{{ url_for('login') }}">Log In</a>
+      <a href="{{ url_for('logout') }}">Log Out</a>
+  </nav>
   </div>
 </header>
 
@@ -82,7 +80,7 @@
 
 <footer class="simple-footer">
   <div class="container">
-    <p>&copy; {{ current_year }} Super Fun Expense Tracker.</p>
+    <p>&copy; {{ current_year }} Expense Tracker.</p>
   </div>
 </footer>
 </body>
