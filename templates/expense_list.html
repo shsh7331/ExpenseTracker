@@ -6,60 +6,55 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<header>
-  <div class="container">
-    <div class="logo">
-      <h1>Super Fun Expense Tracker</h1>
-    </div>
-    <nav class="nav-links">
-      <a href="{{ url_for('home') }}">Home</a> |
-      <a href="{{ url_for('add_expense') }}">Add Expense</a> |
-      <a href="{{ url_for('expense_list') }}">Expense List</a> |
-      <a href="{{ url_for('savings') }}">Savings Goals</a> |
-      <a href="{{ url_for('settings') }}">Settings</a> |
-      {% if logged_in %}
-      <a href="{{ url_for('logout') }}">Logout</a>
-      {% else %}
-      <a href="{{ url_for('login') }}">Login</a>
-      {% endif %}
-    </nav>
-  </div>
-</header>
+  <nav>
+    <a href="{{ url_for('home') }}">Home</a> |
+    <a href="{{ url_for('add_expense') }}">Add Expense</a> |
+    <a href="{{ url_for('expense_list') }}">Expense List</a> |
+    <a href="{{ url_for('savings') }}">Savings Goals</a> |
+    <a href="{{ url_for('settings') }}">Settings</a> |
+    <a href="{{ url_for('create') }}">Create an Account</a> |
+    <a href="{{ url_for('login') }}">Log In</a>
+    <a href="{{ url_for('logout') }}">Log Out</a>
+  </nav>
 
-<main class="container">
-  <section class="home-welcome">
-    <h2>Your Expenses</h2>
-    <table>
-      <thead>
-      <tr>
-        <th>Date</th>
-        <th>Name</th>
-        <th>Category</th>
-        <th>Amount</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% for exp in expenses %}
-      <tr>
-        <td>{{ exp.expense_date }}</td>
-        <td>{{ exp.expense_name }}</td>
-        <td>{{ exp.category_name }}</td>
-        <td>${{ "%.2f"|format(exp.expense_amount) }}</td>
-      </tr>
+  <div class="expense-list-container">
+    <h1>Expense List</h1>
+
+    <div class="category-grid">
+      {% for category in categories %}
+      <div class="category-card">
+        <div class="category-icon">[ICON]</div>
+        <div class="category-details">
+          <span class="category-name">{{ category.category_name }}</span>
+          <span class="category-budget">Monthly Budget: ${{ "%.2f"|format(category.budget) if category.budget is not none else '0.00' }}</span>
+          <span class="category-spending">Recent Spending: ${{ "%.2f"|format(category.recent_spending) }}</span>
+        </div>
+      </div>
       {% else %}
-      <tr>
-        <td colspan="4">No expenses recorded yet.</td>
-      </tr>
+      <p>No categories created yet. Add some categories and expenses!</p>
       {% endfor %}
-      </tbody>
-    </table>
-  </section>
-</main>
+    </div>
 
-<footer class="simple-footer">
-  <div class="container">
-    <p>&copy; {{ current_year }} Super Fun Expense Tracker.</p>
+    <hr>
+
+    <h2>Recent Transactions</h2>
+    <div class="transactions-list">
+      {% for expense in expenses %}
+      <div class="transaction-card">
+        <div class="transaction-info">
+          <span class="transaction-name">{{ expense.expense_name }}</span>
+          <span class="transaction-category">{{ expense.category_name }}</span>
+        </div>
+        <span class="transaction-details">
+          ${{ "%.2f"|format(expense.expense_amount) if expense.expense_amount is not none else '0.00' }} 
+          {{ expense.expense_date.strftime('%m/%d/%y') if expense.expense_date else '' }}
+        </span>
+      </div>
+      {% else %}
+      <p>No recent transactions found.</p>
+      {% endfor %}
+    </div>
   </div>
-</footer>
+
 </body>
 </html>
