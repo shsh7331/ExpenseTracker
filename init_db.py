@@ -1,251 +1,173 @@
-import sqlite3
+import psycopg2
 
 # View ER Diagram: https://dbdiagram.io/d/680062581ca52373f54ffd9b
 
-mydb = "db"
-def create(db):
-    conn = sqlite3.connect(db)
-    cursor = conn.cursor()
 
-    # Enable foreign key enforcement
-    cursor.execute("PRAGMA foreign_keys = ON;")
+def init_db():
 
-    # Create users table
-    cursor.execute(
+    # Connect to PostgreSQL db on Render
+    conn = psycopg2.connect(
+        "postgresql://deepfinance_expense_tracker_database_user:NyIrVfklZmymWd79xMHbsfcjeEWbVZP2@dpg-d01g1hadbo4c738nslq0-a.oregon-postgres.render.com/deepfinance_expense_tracker_database"
+    )
+    cur = conn.cursor()
+    # 0) create an account
+    cur.execute(
         """
-    CREATE TABLE IF NOT EXISTS users (
-        id_user INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL UNIQUE,
-        email TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,              -- hashed passwords
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
-    """
+        CREATE TABLE users (
+        id INT PRIMARY KEY IDENTITY(1,1),
+        Email NVARCHAR(255) NOT NULL UNIQUE,
+        PassHash NVARCHAR(255) NOT NULL
+        
+        CREATE PROCEDURE Register
+        @Email NVARCHAR(255),
+        @Pass NVARCHAR(255)
+        AS
+        BEGIN
+            DECLARE @PassHash NVARCHAR(255),
+            SET @PassHash = HASHBYTES('SHA2_256', @Pass);
+
+            INSERT INTO Users (Email, PassHash)
+            VALUES (@Email, @PassHash)
+        END;
+        );
+        """
+    )
+        
+    # 1) users table
+    cur.execute(
+        """
+        CREATE TABLE
+            IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username TEXT NOT NULL UNIQUE,
+                email TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        """
     )
 
-    # Create categories table
-    cursor.execute(
+    # 2) categories table
+    cur.execute(
         """
-    CREATE TABLE IF NOT EXISTS categories (
-        id_category INTEGER PRIMARY KEY AUTOINCREMENT,
-        category_name TEXT NOT NULL UNIQUE
-    );
-    """
+        CREATE TABLE
+            IF NOT EXISTS categories (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                category_name TEXT NOT NULL,
+                budget NUMERIC(12, 2) DEFAULT 0,
+                UNIQUE (user_id, category_name)
+            );
+        """
     )
 
-    # Create expenses table
-    cursor.execute(
+    # Add budget column to categories if it doesn't exist (for backwards compatibility)
+    try:
+        cur.execute(
+            """ALTER TABLE categories ADD COLUMN IF NOT EXISTS budget NUMERIC(12, 2) DEFAULT 0;"""
+        )
+        conn.commit() # Commit this change immediately
+    except psycopg2.Error as e:
+        print(f"Error adding budget column (may already exist or other issue): {e}")
+        conn.rollback() # Rollback if alter fails
+
+    # Add user_id column to categories if it doesn't exist (for backwards compatibility)
+    try:
+        cur.execute(
+            """ALTER TABLE categories ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE;"""
+        )
+        conn.commit() # Commit this change immediately
+    except psycopg2.Error as e:
+        print(f"Error adding user_id column (may already exist or other issue): {e}")
+        conn.rollback() # Rollback if alter fails
+
+    # 3) expenses table
+    cur.execute(
         """
-    CREATE TABLE IF NOT EXISTS expenses (
-        id_expense INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        category_id INTEGER NOT NULL,
-        expense_name TEXT NOT NULL,
-        expense_amount REAL NOT NULL,
-        expense_date DATE NOT NULL,
-        FOREIGN KEY(user_id) REFERENCES users(id_user),
-        FOREIGN KEY(category_id) REFERENCES categories(id_category)
-    );
-    """
+        CREATE TABLE
+            IF NOT EXISTS expenses (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                category_id INTEGER NOT NULL REFERENCES categories (id) ON DELETE RESTRICT,
+                expense_name TEXT NOT NULL,
+                expense_amount NUMERIC(12,2) NOT NULL,
+                expense_date DATE NOT NULL
+            );
+        """
     )
 
-    # Create savings_goals table
-    cursor.execute(
+    # 4) savings_goals table
+    cur.execute(
         """
-    CREATE TABLE IF NOT EXISTS savings_goals (
-        id_goal INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        goal_name TEXT NOT NULL,
-        target_amount REAL NOT NULL,
-        amount_saved REAL DEFAULT 0,
-        priority INTEGER DEFAULT 0,
-        status TEXT DEFAULT 'active',
-        FOREIGN KEY(user_id) REFERENCES users(id_user)
-    );
-    """
+        CREATE TABLE
+            IF NOT EXISTS savings_goals (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                goal_name TEXT NOT NULL,
+                target_amount NUMERIC(12,2) NOT NULL,
+                amount_saved NUMERIC(12,2) NOT NULL DEFAULT 0
+            );
+        """
     )
 
-    # Create budgets table
-    cursor.execute(
+    # 5) savings_entries
+    cur.execute(
         """
-    CREATE TABLE IF NOT EXISTS budgets (
-        id_budget INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        category_id INTEGER NOT NULL,
-        amount REAL NOT NULL,
-        start_date DATE NOT NULL,
-        end_date DATE NOT NULL,
-        FOREIGN KEY(user_id) REFERENCES users(id_user),
-        FOREIGN KEY(category_id) REFERENCES categories(id_category)
-    );
-    """
+        CREATE TABLE
+            IF NOT EXISTS savings_entries (
+                id SERIAL PRIMARY KEY,
+                goal_id INTEGER NOT NULL REFERENCES savings_goals (id) ON DELETE CASCADE,
+                amount NUMERIC(12,2) NOT NULL,
+                date_added TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            );
+        """
     )
 
-    # Create settings table with constraints and trigger for updated_at
-    cursor.execute(
+    # 6) settings table
+    cur.execute(
         """
-    CREATE TABLE IF NOT EXISTS settings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL UNIQUE,
-        theme TEXT NOT NULL DEFAULT 'default-light',
-        notifications_enabled INTEGER NOT NULL DEFAULT 1,
-        email_alerts INTEGER NOT NULL DEFAULT 1,
-        budget_reminder_day INTEGER CHECK (budget_reminder_day BETWEEN 1 AND 31) DEFAULT NULL,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        bank_connection TEXT,               -- encrypted data stored as TEXT or BLOB
-        FOREIGN KEY(user_id) REFERENCES users(id)
-    );
-    """
+        CREATE TABLE
+            IF NOT EXISTS settings (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL UNIQUE REFERENCES users (id) ON DELETE CASCADE,
+                theme TEXT NOT NULL DEFAULT 'default-light',
+                notifications_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+                email_alerts BOOLEAN NOT NULL DEFAULT TRUE,
+                budget_reminder_day INTEGER CHECK (budget_reminder_day BETWEEN 1 AND 31),
+                bank_connection TEXT
+            );
+        """
     )
 
-    # Trigger to auto-update "updated_at" on settings table UPDATE
-    cursor.execute(
+    # 7) trigger function for updated_at
+    cur.execute(
         """
-    CREATE TRIGGER IF NOT EXISTS trg_settings_updated_at
-    AFTER UPDATE ON settings
-    FOR EACH ROW
-    BEGIN
-      UPDATE settings
-      SET updated_at = CURRENT_TIMESTAMP
-      WHERE id = OLD.id;
-    END;
-    """
+        CREATE OR REPLACE FUNCTION settings_updated_at_trigger()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at := CURRENT_TIMESTAMP;
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+        """
     )
 
+    # 8) trigger binding
+    cur.execute(
+        """
+        DROP TRIGGER IF EXISTS trigger_settings_updated_at ON settings;
+
+        CREATE TRIGGER trigger_settings_updated_at BEFORE
+        UPDATE ON settings FOR EACH ROW EXECUTE PROCEDURE settings_updated_at_trigger ();
+        """
+    )
+
+    # Commit and close
     conn.commit()
+    cur.close()
     conn.close()
-
-def fill_users(db):
-    conn = sqlite3.connect(db)
-    cursor = conn.cursor()
-
-    test_user = [
-            (101, 'alice', 'alice@expensetracker.com', 'alice123'),
-            (102, 'bob', 'bob@expensetracker.com', 'bob123'),
-            (103, 'carol', 'carol@expensetracker.com', 'carol123'),
-        ]
-    cursor.executemany('''
-        INSERT INTO users (id_user, username, email, password)
-        VALUES (?, ?, ?, ?)
-        ''', test_user)
-    conn.commit()
-    conn.close()
-    return "DB users filled with sample data"
-
-def fill_categories(db):
-    conn = sqlite3.connect(db)
-    cursor = conn.cursor()
-
-    test_categories = [
-            (1001, 'Food'),
-            (1002, 'Transport'),
-            (1003, 'Rent'),
-            (1004, 'Entertainment'),
-            (1005, 'Utilities'),
-            (1006, 'Healthcare'),
-            (1007, 'Other'),
-        ]
-    cursor.executemany('''
-        INSERT INTO categories (id_category, category_name)
-        VALUES (?, ?)
-        ''', test_categories)
-    conn.commit()
-    conn.close()
-    return "DB categories filled with sample data"
-
-def fill_expenses(db):
-    conn = sqlite3.connect(db)
-    cursor = conn.cursor()
-
-    test_expenses = [
-            (201, 101, 1001, 'Groceries at Walmart', 85.50, "2025/03/15"),
-            (202, 101, 1002, 'Uber to office', 13.25, "2025/03/16"),
-            (203, 101, 1003, 'Monthly Rent', 1250.00, "2025/03/1"),
-            (204, 102, 1001, 'Dinner with friends', 42.00, "2025/03/10"),
-            (205, 102, 1004, 'Netflix Subscription', 15.99, "2025/03/05"),
-            (206, 102, 1002, 'Bus Pass', 50.00, "2025/03/06"),
-            (207, 103, 1001, 'Doctor Appointment', 120.00, "2025/03/08"),
-            (208, 103, 1004, 'Electricity Bill', 60.75, "2025/03/04"),
-            (209, 103, 1002, 'Groceries', 72.40, "2025/03/09"),
-        ]
-    cursor.executemany('''
-        INSERT INTO expenses (id_expense, user_id, category_id, expense_name, expense_amount, expense_date)
-        VALUES (?, ?, ?, ?, ?, ?)
-        ''', test_expenses)
-    conn.commit()
-    conn.close()
-    return "DB expense filled with sample data"
-
-
-def fill_goals(db):
-    conn = sqlite3.connect(db)
-    cursor = conn.cursor()
-
-    test_goals = [
-            (301, 101, 'Emergency Fund', 5000.00, 1200.00, 1,'active'),
-            (302, 101, 'Vacation to India', 3000.00, 750.00, 3,'active'),
-            (303, 101, 'New Laptop', 1500.00, 550.00, 1,'active'),
-            (304, 102, 'Health Fund', 9000.00, 5600.00, 1,'active'),
-            (305, 102, 'Home Renovation', 20000.00, 11500.00, 1,'active'),
-            (306, 102, 'Vacation to China', 5000.00, 4300.00, 2,'active'),
-            (307, 103, 'Wedding Fund', 25000.00, 18000.00, 1,'active'),
-            (308, 103, 'Vacation to Hawaii', 8000.00, 3400.00, 1,'active'),
-            (309, 103, 'New Furniture', 3500.00, 1150.00, 2,'active'),
-        ]
-    cursor.executemany('''
-        INSERT INTO savings_goals (id_goal, user_id, goal_name, target_amount, amount_saved, priority, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', test_goals)
-    conn.commit()
-    conn.close()
-    return "DB goals filled with sample data"
-
-# def fill_budget(db):
-#     conn = sqlite3.connect(db)
-#     cursor = conn.cursor()
-
-#     test_budgets = [
-#             (301, 101, 'Emergency Fund', 5000.00, 1200.00, 1,'active'),
-#             (302, 101, 'Vacation to India', 3000.00, 750.00, 3,'active'),
-#             (303, 101, 'New Laptop', 1500.00, 550.00, 1,'active'),
-#             (304, 102, 'Health Fund', 9000.00, 5600.00, 1,'active'),
-#             (305, 102, 'Home Renovation', 20000.00, 11500.00, 1,'active'),
-#             (306, 102, 'Vacation to China', 5000.00, 4300.00, 2,'active'),
-#             (307, 103, 'Wedding Fund', 25000.00, 18000.00, 1,'active'),
-#             (308, 103, 'Vacation to Hawaii', 8000.00, 3400.00, 1,'active'),
-#             (309, 103, 'New Furniture', 3500.00, 1150.00, 2,'active'),
-#         ]
-#     cursor.executemany('''
-#         INSERT INTO budgets (id_budget, user_id, category_id, amount, start_date, end_date)
-#         VALUES (?, ?, ?, ?, ?, ?)
-#         ''', test_budgets)
-#     conn.commit()
-#     conn.close()
-#     return "DB budgets filled with sample data"
-
-
-def check_user_credentials(db, username, password):
-    """
-    Checks if the given username and password match a user in the database.
-    Returns True if credentials are valid, otherwise False.
-    """
-    conn = sqlite3.connect(db)
-    cursor = conn.cursor()
-    
-    cursor.execute(
-        "SELECT * FROM users WHERE username = ? AND password = ?",
-        (username, password)
-    )
-    
-    result = cursor.fetchone()
-    conn.close()
-    
-    return result is not None
 
 
 if __name__ == "__main__":
-    create(mydb)
-    fill_users(mydb)
-    fill_categories(mydb)
-    fill_expenses(mydb)
-    fill_goals(mydb)
+    init_db()
+    print("Database initialized!")
