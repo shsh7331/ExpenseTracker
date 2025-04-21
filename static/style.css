@@ -123,3 +123,102 @@ nav a:hover {
     font-size: 0.9em;
     color: #777;
 }
+
+
+/* add expense Container Layout */
+.addexpense-container {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+
+/* Main Sections */
+main {
+  padding: 2rem 0;
+}
+
+/* Login Container */
+.addexpenselogin-container, .addexpensehome-welcome, .addexpenseform-group {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+}
+
+.addexpenselogin-container h2 {
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+/* Form Styling */
+.addexpenselogin-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.addexpenselogin-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+.addexpenselogin-form input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  transition: border 0.2s ease;
+}
+
+.addexpenselogin-form input:focus {
+  border-color: #6366f1;
+  outline: none;
+}
+
+/* Buttons */
+.addexpenselogin-btn, .btn {
+  background-color: #6366f1;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.addexpenselogin-btn:hover, .btn:hover {
+  background-color: #4f46e5;
+}
+
+
+/* Footer */
+.simple-footer {
+  background-color: #f3f4f6;
+  text-align: center;
+  padding: 1rem 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+  .nav-links {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .addexpense-container {
+    padding: 1rem;
+  }
+
+  .addexpenselogin-container, .addexpensehome-welcome {
+    padding: 1.25rem;
+  }
+}
