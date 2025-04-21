@@ -16,11 +16,12 @@
       <a href="{{ url_for('login') }}">Log In</a>
       <a href="{{ url_for('logout') }}">Log Out</a>
     </nav>
+
   
 <main class="container">
   <section class="addexpensehome-welcome">
     <h2>Add a New Expense</h2>
-    <form action="{{ url_for('expense_list') }}" method="post">
+    <form action="{{ url_for('add_expense') }}" method="post">
       <div class="addexpenseform-group">
         <label for="expense_name">Expense Name</label>
         <input
@@ -36,7 +37,7 @@
         <label for="expense_date">Date</label>
         <input
                 type="date"
-                id="expense_date"
+                id="date"
                 name="expense_date"
                 required
         >
@@ -44,10 +45,10 @@
 
       <div class="addexpenseform-group">
         <label for="category">Category</label>
-        <select id="category" name="category" required>
+        <select id="category_id" name="category" required>
           <option value="" disabled selected>— select one —</option>
           {% for cat in categories %}
-          <option value="{{ cat.id_category }}">
+          <option value="{{ cat.category_id }}">
             {{ cat.category_name }}
           </option>
           {% endfor %}
@@ -59,7 +60,7 @@
         <input
                 type="number"
                 step="0.01"
-                id="expense_amount"
+                id="amount_float"
                 name="expense_amount"
                 required
                 placeholder="0.00"
