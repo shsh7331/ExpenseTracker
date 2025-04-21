@@ -1,43 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Home - Super Fun Expense Tracker</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <meta charset="UTF-8">
+  <title>DeepFinance</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header>
-    <div class="container">
-      <div class="logo">
-        <h1>Super Fun Expense Tracker</h1>
-      </div>
-      <nav>
-        <a href="{{ url_for('home') }}">Home</a> |
-        <a href="{{ url_for('add_expense') }}">Add Expense</a> |
-        <a href="{{ url_for('expense_list') }}">Expense List</a> |
-        <a href="{{ url_for('savings') }}">Savings Goals</a> |
-        <a href="{{ url_for('settings') }}">Settings</a> |
-        {% if logged_in %}
-        <a href="{{ url_for('logout') }}">Logout</a>
-        {% else %}
-        <a href="{{ url_for('login') }}">Login</a>
-        {% endif %}
-      </nav>
-    </div>
-  </header>
+  <nav>
+    <a href="/">Home</a> |
+    <a href="/add_expense">Add Expense</a> |
+    <a href="/expense_list">Expense List</a> |
+    <a href="/savings">Savings Goals</a> |
+    <a href="/settings">Settings</a> |
+    <a href="/create_account">Create an Account</a> |
+    <a href="/login">Log In</a> |
+    <a href="/logout">Log Out</a>
+  </nav>
 
-  <main class="container">
-    <section class="home-welcome">
-      <h2>Welcome to your personal finance tracker!</h2>
-      <p>Track your expenses, manage your budget, and set savings goals all in one place.</p>
-    </section>
-  </main>
-
-  <footer class="simple-footer">
-    <div class="container">
-      <p>&copy; {{ current_year if current_year else "2025" }} Super Fun Expense Tracker.</p>
-    </div>
-  </footer>
+  <h1><b>Welcome to DeepFinance!</b></h1>
+  <p>This webpage can help you reach your savings goals</p>
 </body>
 </html>
